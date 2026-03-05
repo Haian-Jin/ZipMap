@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #ffffff;
+      }
+      model-viewer {
+        width: 100%;
+        height: 100%;
+        background-color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <model-viewer
+      id="mv"
+      src=""
+      alt="3D model"
+      camera-controls
+      exposure="1.0"
+      shadow-intensity="0.6"
+      environment-image="neutral"
+    ></model-viewer>
+
+    <script>
+      const params = new URLSearchParams(location.search);
+      const mv = document.getElementById('mv');
+
+      const src = params.get('src');
+      if (src) mv.setAttribute('src', src);
+
+      // Optional overrides: ?orbit=0deg+60deg+auto  ?target=0m+1m+0m
+      const orbit = params.get('orbit');
+      const target = params.get('target');
+      const shadowIntensity = params.get('shadow_intensity');
+      if (orbit) mv.setAttribute('camera-orbit', orbit);
+      if (target) mv.setAttribute('camera-target', target);
+      if (shadowIntensity !== null) mv.setAttribute('shadow-intensity', shadowIntensity);
+
+      mv.addEventListener('load', () => {
+        try {
+          for (const material of mv.model.materials) {
+            material.doubleSided = true;
+          }
+          mv.jumpCameraToGoal();
+        } finally {
+          window.parent.postMessage('glb-loaded', '*');
+        }
+      });
+    </script>
+  </body>
+</html>

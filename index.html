@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="ZipMap">
+  <meta name="keywords" content="ZipMap">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZipMap</title>
+
+  <link rel="icon" type="image/x-icon" href="static/zipmap-logo.png">
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-PYVRSFMDRL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag('js', new Date());
+
+    gtag('config', 'G-PYVRSFMDRL');
+  </script>
+
+  <meta property="og:image" content="http://haian-jin.github.io/zipmap/zipmap-logo.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ZipMap: Linear-Time Stateful 3D Reconstruction with Test-Time Training">
+<meta name="twitter:description" content="We present a system that allows for accurate, fast, and robust estimation of camera parameters and depth maps from casual monocular videos of dynamic scenes. Most conventional structure from motion and monocular SLAM techniques assume input videos that feature predominantly static scenes with large amounts of parallax. Such methods tend to produce erroneous estimates in the absence of these conditions. Recent neural network-based approaches attempt to overcome these challenges; however, such methods are either computationally expensive or brittle when run on dynamic videos with uncontrolled camera motion or unknown field of view. We demonstrate the surprising effectiveness of a deep visual SLAM framework: with careful modifications to its training and inference schemes, this system can scale to real-world videos of complex dynamic scenes with unconstrained camera paths, including videos with little camera parallax. Extensive experiments on both synthetic and real videos demonstrate that our system is significantly more accurate and robust at camera pose and depth estimation when compared with prior and concurrent work, with faster or comparable running times.">
+<meta name="twitter:image" content="http://haian-jin.github.io/zipmap/zipmap-logo.png">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans:400,600|Noto+Sans:400,600|Castoro:400,600"
+        rel="stylesheet">
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.2/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.3/dist/css/bulma-carousel.min.css">
+  <!--<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-carousel@4.0.4/dist/css/bulma-carousel.min.css">-->
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="./static/js/viewer.js"></script>
+<style>
+#interactive {
+  position: relative;
+  display: inline-block;
+  width: 840px;
+  aspect-ratio: 16/9;
+  max-width: 100%;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 0 4px #000;
+  
+}
+#interactive canvas, #interactive #glfailed, #interactive #loading {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+#interactive #glfailed {
+  color: #f88;
+  background: black;
+  display: none;
+}
+#interactive #loading {
+  color: #000;
+  font-size: 32px;
+  font-weight: bold;
+  background: rgba(255,255,255,0.8);
+  display: none;
+}
+.load img {
+  width: 130px;
+  height: 91px;
+  object-fit: cover;
+  margin: 4px;
+  border: 3px solid #fff;
+  box-shadow: 0 0 4px #888;
+  border-radius: 6px;
+  vertical-align: bottom;
+}
+.load img[data-glb] {
+  border-color: #6ab0f5;
+}
+.load img[data-scene] {
+  border-color: #6fcf97;
+}
+.load img:active {
+  box-shadow: 0 0 4px #000;
+  opacity: .8;
+}
+.frusta-btn {
+  font-size: 12px;
+  padding: 2px 7px;
+}
+input[type=range]:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.frusta-btn.active-frusta {
+  font-weight: bold;
+  box-shadow: inset 0 0 3px rgba(0,0,0,0.4);
+  text-decoration: underline;
+}
+.viewer-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  align-items: center;
+  padding: 5px 10px;
+  background: rgba(0,0,0,0.06);
+  border-radius: 4px;
+  margin: 5px 0 2px 0;
+  font-size: 13px;
+  user-select: none;
+}
+.viewer-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.toolbar-label {
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-right: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered" style="margin-bottom: 0em">
+        <div class="column is-max-desktop has-text-centered">
+          <h1 class="title is-1 publication-title" style="margin-bottom:0rem">ZipMap</h1>
+          <h3 class="title is-3 publication-title">Linear-Time Stateful 3D Reconstruction via Test-Time Training</h3>
+	</div>
+	</div>
+      <div class="columns is-centered">
+        <div class="column is-three-fifths has-text-centered">
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://haian-jin.github.io/">Haian Jin</a><sup>1,2</sup></span>&nbsp&nbsp&nbsp&nbsp
+            <span class="author-block">
+              <a href="https://rundiwu.github.io/">Rundi Wu</a><sup>1</sup>&nbsp&nbsp&nbsp&nbsp
+            </span>
+            <span class="author-block">
+              <a href="https://tianyuanzhang.com/">Tianyuan Zhang</a><sup>3</sup>&nbsp&nbsp&nbsp&nbsp
+            </span>
+            <span class="author-block">
+              <a href="https://ruiqigao.github.io/">Ruiqi Gao</a><sup>1</sup>&nbsp&nbsp&nbsp&nbsp
+            </span>
+            <span class="author-block">
+              <a href="https://jonbarron.info/">Jonathan T. Barron</a><sup>1</sup>&nbsp&nbsp&nbsp&nbsp
+            </span>
+            <span class="author-block">
+              <a href="https://www.cs.cornell.edu/~snavely/">Noah Snavely</a><sup>1,2</sup>&nbsp&nbsp&nbsp&nbsp
+            </span>
+            <span class="author-block">
+              <a href="https://holynski.org/">Aleksander Hoły&#x301;nski</a><sup>1</sup>
+            </span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>Google DeepMind </span>
+            &nbsp&nbsp&nbsp&nbsp
+            <span class="author-block"><sup>2</sup>Cornell University </span>
+            &nbsp&nbsp&nbsp&nbsp
+            <span class="author-block"><sup>3</sup>Massachusetts Institute of Technology</span>
+          </div>
+
+          <h1 style="font-size:24px;font-weight:bold">CVPR 2026</h1>
+
+    
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- PDF Link. -->
+              <span class="link-block">
+                <a href="https://arxiv.org/pdf/2603.04385"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span>
+              <!-- Video Link. -->
+
+
+              <span class="link-block">
+                <a href="https://github.com/Haian-Jin/ZipMap" 
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i> 
+                  </span>
+                  <span>Code </span>
+                </a>
+              </span>
+
+
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero teaser">
+  <div class="container fluid">
+    <div class="hero-body is-max-widescreen">
+      <center>
+      <video id="teaser" autoplay muted loop playsinline width="80%">
+        <source src="static/videos/our_teaser.mp4" type="video/mp4">
+      </video>
+      </center>
+<div style="width: 80%; margin: 0 auto;">
+<div class="notification is-centered is-info is-rounded" style="text-align: center; padding-bottom: 5px; padding-top: 5px; background-color: #d0d5ec;">
+<!-- <h6 style="text-align: center; color:rgb(0, 0, 0); font-size: 1.2rem;"><strong>TL;DR</strong>: <strong>ZipMap</strong> achieves linear-time and stateful 3D reconstruction by <strong>zipping</strong> all input tokens into a compact scene state via Test-Time Training layers, 
+  matching or surpassing the existing quadratic-time SOTA (e.g., VGGT and π³) with over 20× speedup at 750 images — <strong>zips</strong> through large image collections.</h6> -->
+  <h6 style="text-align: center; color:rgb(0, 0, 0); font-size: 1.2rem;"><strong>TL;DR</strong>: Linear-time, stateful 3D reconstruction that matches/beats O(N²) SOTA, like VGGT, with over 20× speedup.</h6>
+   
+    </div>
+</div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Abstract. -->
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-three-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+Feed-forward transformer models have driven rapid progress in 3D vision, but state-of-the-art methods such as VGGT and π³ have a computational cost that scales quadratically with the number of input images, making them inefficient when applied to large image collections. 
+Sequential-reconstruction approaches reduce this cost but sacrifice reconstruction quality. We introduce ZipMap, a stateful feed-forward model that achieves linear-time, bidirectional 3D reconstruction while matching or surpassing the accuracy of quadratic-time methods. ZipMap employs test-time training layers to compress an entire image collection into a compact hidden scene state in a single forward pass, enabling reconstruction of over 700 frames in under 10 seconds on a single H100 GPU—more than <strong>20×</strong> faster than SOTA methods such as VGGT. 
+Moreover, we demonstrate the benefits of having a stateful representation in real-time scene state querying and its extension to sequential streaming reconstruction.        
+</p>
+        </div>
+      </div>
+    </div>
+    </div>
+    <br>
+
+</section>
+
+
+<section>
+    <div class="columns is-centered has-text-centered is-max-desktop">
+      <div class="column is-three-fifths">
+        <div class="notification is-warning is-light" style="padding: 1.0rem 1.0rem 1.0rem 1.0rem">
+          <a id="demo"></a>
+          
+              <h2 class="title is-3" style="margin-bottom: 0.3em"><div style="
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                gap: 1em; 
+                white-space: nowrap;
+                font-size: clamp(1rem, 5vw, 2rem); /* Responsive text size */
+              ">
+                <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512" style="fill: #ccb20c; flex-shrink: 0;">
+                  <path d="M0 256L28.5 28c2-16 15.6-28 31.8-28H228.9c15 0 27.1 12.1 27.1 27.1c0 3.2-.6 6.5-1.7 9.5L208 160H347.3c20.2 0 36.7 16.4 36.7 36.7c0 7.4-2.2 14.6-6.4 20.7l-192.2 281c-5.9 8.6-15.6 13.7-25.9 13.7h-2.9c-15.7 0-28.5-12.8-28.5-28.5c0-2.3 .3-4.6 .9-6.9L176 288H32c-17.7 0-32-14.3-32-32z"></path>
+                </svg>
+                <span>Interactive examples</span>
+                <svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 384 512" style="fill: #ccb20c; flex-shrink: 0;">
+                  <path d="M0 256L28.5 28c2-16 15.6-28 31.8-28H228.9c15 0 27.1 12.1 27.1 27.1c0 3.2-.6 6.5-1.7 9.5L208 160H347.3c20.2 0 36.7 16.4 36.7 36.7c0 7.4-2.2 14.6-6.4 20.7l-192.2 281c-5.9 8.6-15.6 13.7-25.9 13.7h-2.9c-15.7 0-28.5-12.8-28.5-28.5c0-2.3 .3-4.6 .9-6.9L176 288H32c-17.7 0-32-14.3-32-32z"></path>
+                </svg>
+              </div>
+              </h2> 
+            <div style="margin-bottom: 0.3em">Pick a scene below to explore in 3D! Press Space to play/pause, click and drag to change viewpoint.</div>
+
+            <div id="interactive" class="hero">
+              <canvas id="megaview" width="512" height="288"></canvas>
+              <canvas id="video-overlay" style="position:absolute; top:8px; left:8px; z-index:10; border-radius:4px; border:2px solid rgba(255,255,255,0.7); box-shadow:0 2px 8px rgba(0,0,0,0.6); display:block; image-rendering:auto;"></canvas>
+              <iframe id="glb-viewer-frame" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; border:none; z-index:6;" allowfullscreen></iframe>
+              <div id="glfailed"><br><br>[Demo requres browser with WebGL2 support.]</div>
+              <div id="loading"><br><br>Loading...</div>
+            </div>
+            <div class="viewer-toolbar" id="viewer-toolbar">
+              <div class="viewer-toolbar-group">
+                <span id="points-mode-controls"><span class="toolbar-label">Points:</span><button onclick="setOtherPoints('no');" id="other-points-no" class="frusta-btn">Off</button><button onclick="setOtherPoints('points');" id="other-points-points" class="frusta-btn">All</button><button onclick="setOtherPoints('past');" id="other-points-past" class="frusta-btn active-frusta">Past</button></span>
+                <span id="cur-size-label" class="toolbar-label" style="margin-left:6px">Cur size:</span>
+                <input type="range" id="point-size-slider" min="0.2" max="4.2" step="0.4" value="2.2" oninput="state.point_size=+this.value; dirty=true;" style="width:70px; vertical-align:middle">
+                <span id="multi-size-controls"><span class="toolbar-label" style="margin-left:6px">Multi size:</span><input type="range" id="other-point-size-slider" min="0.2" max="6.2" step="0.4" value="2.6" oninput="state.other_point_size=+this.value; dirty=true;" style="width:70px; vertical-align:middle"></span>
+              </div>
+              <div class="viewer-toolbar-group" id="frusta-mode-group">
+                <span class="toolbar-label">Frusta:</span>
+                <button onclick="setFrustaMode('all');" id="frusta-all" class="frusta-btn active-frusta">All</button><button onclick="setFrustaMode('current');" id="frusta-current" class="frusta-btn">Current</button><button onclick="setFrustaMode('none');" id="frusta-none" class="frusta-btn">None</button>
+              </div>
+              <div class="viewer-toolbar-group">
+                <span class="toolbar-label">Frusta size:</span>
+                <input type="range" id="frustum-size-slider" min="0.01" max="0.5" step="0.02" value="0.25" oninput="state.frustum_size=+this.value; dirty=true;" style="width:90px; vertical-align:middle">
+              </div>
+              <div class="viewer-toolbar-group" id="video-overlay-group">
+                <span class="toolbar-label">Orig. video:</span>
+                <button onclick="toggleVideoOverlay()" id="video-overlay-btn" class="frusta-btn active-frusta">Hide</button>
+              </div>
+            </div>
+        <div style="font-size: 12px;"> (Note: scene geometry is downsampled for faster loading. Firefox may not properly render point clouds.)</div>
+    <div class="load">
+      <!-- <img src="static/thumbs/citywalk.png" data-scene="citywalk" data-every_nth=1> -->
+      <img src="static/thumbs/citywalk.png" data-glb="./static/glb/citywalk.glb" data-orbit="150deg 60deg 12%" data-shadow_intensity="0">
+      <img src="static/thumbs/mall.png" style="border-color:#6ab0f5" data-scene="mall-400" data-every_nth=1 data-forward=".5" data-distance="1.1" data-frustum_size="0.02" data-rx="0.1" data-ry="0" data-pan_x="0.3"  data-point_size="2" data-other_point_size="1.8"  >
+      <img src="static/thumbs/kitchen_lego.png" data-glb="./static/glb/kitchen_lego.glb" data-orbit="-20deg 40deg 120%" data-shadow_intensity="0">
+      <img src="static/thumbs/Istanbul.png" data-glb="./static/glb/Istanbul.glb" data-orbit="120deg 40deg 50%" data-shadow_intensity="0">
+      <!-- <img src="static/thumbs/aleks.png" data-glb="./static/glb/aleks.glb" data-orbit="180deg 80deg 25%" data-shadow_intensity="0"> -->
+      <!-- <img src="static/thumbs/Nighthawks.jpg" data-glb="./static/glb/Nighthawks.glb" data-orbit="180deg 80deg 25%" data-shadow_intensity="0"> -->
+
+      <img src="static/thumbs/store.png" data-glb="./static/glb/store.glb" data-orbit="180deg 60deg 80%" data-shadow_intensity="0">      
+      <img src="static/thumbs/Edward_hopper_chop_suey.jpg" data-glb="./static/glb/Edward_hopper_chop_suey.glb" data-orbit="180deg 80deg 25%" data-shadow_intensity="0">
+      <img src="static/thumbs/classic_room.png" data-glb="./static/glb/classic_room.glb" data-orbit="180deg 80deg 105%">
+      <img src="static/thumbs/davis-drift-straight.png" data-scene="davis-drift-straight" data-forward=1 data-distance="2.5" data-ry="1.0" data-rx="0.3"  data-point_size="3" data-other_point_size="3">
+      <img src="static/thumbs/unitree_walking.png" data-scene="unitree_walking"  data-forward="0.4" data-distance="1.2" data-zoom=1.5 data-rx=".0" data-ry=".2"  data-pan_x="0.5" data-point_size="3" data-other_point_size="3"  data-frustum_size="0.05">
+      <img src="static/thumbs/davis-horsejump-high.png" data-scene="davis-horsejump-high" data-forward="1" data-distance="3" data-ry="-.5" data-rx=".1" data-point_size="2" data-other_point_size="2" data-frustum_size="0.15" >
+      <img src="static/thumbs/skating.png" data-scene="skating"  data-zoom=2 data-rx="-0.1" data-ry="-.4" data-pan_y="0.6" data-elevation="-.1" data-forward=".5" data-distance=2  data-point_size="2" data-other_point_size="1.8" data-frustum_size="0.15" data-frusta_mode="none" data-draw_frustum="false" data-other_frusta="false" data-image="empty">
+      <img src="static/thumbs/veo-3_bar.png" data-scene="veo-3_bar" data-every_nth=2>
+      <img src="static/thumbs/davis-breakdance-flare.png" data-scene="davis-breakdance-flare" data-forward=".5" data-distance="1.1" data-frustum_size="0.1" data-rx="0" data-frusta_mode="current" data-other_frusta="false" data-other_points="no">
+      <img src="static/thumbs/davis-drone.png" data-scene="davis-drone" data-forward=".5" data-distance="1.6" data-frustum_size="0.3" data-rx="0.1" data-ry="0.6"  data-point_size="2" data-other_point_size="1.8"  data-frusta_mode="current" data-other_frusta="false" data-other_points="no">
+    </div>
+    <div style="font-size: 14px; margin-top: 4px;">
+      <span style="display:inline-block; width:12px; height:12px; background:#6ab0f5; border-radius:2px; vertical-align:middle; margin-right:4px;"></span>Static Example
+      &nbsp;&nbsp;
+      <span style="display:inline-block; width:12px; height:12px; background:#6fcf97; border-radius:2px; vertical-align:middle; margin-right:4px;"></span>Dynamic Example
+    </div>
+</div>
+</div></div>
+<br>
+
+</section>
+
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-three-fifths">
+        <h2 class="title is-3">⚡ Superfast reconstruction without compromising quality</h2>
+        <figure style="margin: 1.5rem 0 0;">
+          <img src="./static/images/runtime_comparison.png" alt="Runtime comparison"
+               style="width: 100%; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);" />
+          <figcaption style="
+            margin-top: 0.9rem;
+            padding: 0.85rem 1rem;
+            background: #f8f9fa;
+            border-left: 3px solid #3273dc;
+            border-radius: 0 6px 6px 0;
+            text-align: left;
+            font-size: 1.0rem;
+            line-height: 1.4;
+            color: #444;
+          ">
+            <span style="font-weight: 600; color: #3273dc;">Left:</span>
+            ZipMap’s runtime increases linearly in the number of frames, while quadratic-time baselines (VGGT, π³) slow down rapidly as sequences grow. <strong>ZipMap can process 750 images in less than 10 seconds, while a prior SOTA method (VGGT) takes over 200 seconds. </strong>
+            <br><br>
+            <span style="font-weight: 600; color: #3273dc;">Right:</span>
+            Not only is ZipMap much faster (20×+ at 750 frames), it maintains strong pose accuracy with low ATE across varying input sequence lengths. Its accuracy matches or surpasses the existing quadratic-time SOTA (e.g., VGGT and π³) 
+            <br><br>
+            Please refer to the main paper for complete results across multiple datasets and additional evaluations.
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <br>
+</section>
+
+<section class="section has-carousel" id="carousel" style="padding: 0; margin: auto; ">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-three-fifths">
+        <h2 class="title is-3">More long-sequence reconstruction results</h2>
+	      <p> All results shown here are produced by ZipMap in a purely feed-forward pass on long sequences, running at 75 FPS on a single H100 GPU — <strong>without any extra optimization</strong>. </p>
+</div>
+</div>
+</div>
+<div id="carousel-results" class="carousel">
+    <div class="item item-vid5">
+      <video poster="" id="" autoplay playsinline muted loop height="300px" width="auto">
+        <source src="static/videos/demo_long_3.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="item item-vid5">
+      <video poster="" id="" autoplay playsinline muted loop height="300px" width="auto">
+        <source src="static/videos/demo_long_4.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <div class="item item-vid5">
+      <video poster="" id="" autoplay playsinline muted loop height="300px">
+        <source src="static/videos/demo_long_2.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="item item-vid5">
+      <video poster="" id="" autoplay playsinline muted loop height="300px">
+        <source src="static/videos/demo_long_1.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+  <br>
+  <br>
+  <br>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-three-fifths">
+        <h2 class="title is-3">Scene State Query</h2>
+      </div>
+    </div>
+    <div class="columns is-centered">
+      <div class="column is-three-fifths">
+        <div id="query-switcher">
+          <div class="query-slide">
+            <img src="./static/images/state_query_seen.png" alt="Querying the Scene State" style="width: 100%;">
+            <p style="margin-top: 0.75rem; font-size: 0.9rem; color: #444; text-align: left;">
+              <strong>Querying the Scene State.</strong> For each example (top and bottom), the left column shows the input views (a), ground-truth RGB at the query poses (b), our rendered RGB from the scene state (c), ground-truth depth (d), and predicted depth (e). The middle panels visualize the 3D point clouds reconstructed from the input images. The right panels show point clouds attained <strong>solely by querying the scene state</strong>. The close visual match between these two point clouds indicates that the learned scene state faithfully captures the geometry and appearance of the input scene.
+            </p>
+          </div>
+          <div class="query-slide" style="display: none;">
+            <img src="./static/images/query_unseen_structure.png" alt="Querying Unseen Structure" style="width: 100%;">
+            <p style="margin-top: 0.75rem; font-size: 0.9rem; color: #444; text-align: left;">
+              <strong>Querying Unseen Structure.</strong> Left: input images (a), GT images at query poses (b), and our predicted depth at those poses (c). Middle: point cloud reconstructed from input images only. Right: point cloud after querying, where the queried point cloud is <strong>merged</strong> with the input image point cloud. This demonstrates our model's ability to infer common 3D structure (e.g., walls, floors, and ground) in the unseen regions, thereby indicating an understanding of basic 3D scene priors.
+            </p>
+          </div>
+          <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 1rem;">
+            <button onclick="querySwitch(-1)" style="background: #fff; border: 1px solid #ccc; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1rem;">&#8592;</button>
+            <span id="query-counter" style="font-size: 0.9rem; color: #888;">1 / 2</span>
+            <button onclick="querySwitch(1)" style="background: #fff; border: 1px solid #ccc; border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1rem;">&#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      var slides = document.querySelectorAll('.query-slide');
+      var counter = document.getElementById('query-counter');
+      var current = 0;
+      window.querySwitch = function(dir) {
+        slides[current].style.display = 'none';
+        current = (current + dir + slides.length) % slides.length;
+        slides[current].style.display = 'block';
+        counter.textContent = (current + 1) + ' / ' + slides.length;
+      };
+    })();
+  </script>
+</section>
+
+  <div class="columns is-centered has-text-centered">
+    <div class="column is-half"><br><br>
+      <h2 class="title is-3">Acknowledgements</h2>
+      <div class="content has-text-justified">
+        We would like to thank Shangzhan Zhang, Kyle Genova, Songyou Peng, and Zehao Yu for valuable discussions throughout the project. We thank Alfred Piccioni for help with setting up the training infrastructure, and Ben Poole for feedback on the manuscript. We also thank Yifan Wang and Jianyuan Wang for sharing baseline results and implementation details. Haian Jin was supported in part by a grant from the National Science Foundation (IIS-2211259) and by a Google PhD Fellowship.</div>
+    </div>
+  </div>
+
+
+</section>
+
+ <br>
+
+
+
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-three-fifths">
+        <h2 class="title">BibTeX</h2>
+        <pre style="overflow-x: auto; font-size: 0.85rem;"><code>@inproceedings{jin2026zipmap,
+    title     = {{ZipMap}: Linear-Time Stateful 3D Reconstruction with Test-Time Training},
+    author    = {Jin, Haian and Wu, Rundi and Zhang, Tianyuan and Gao, Ruiqi and Barron, Jonathan T. and Snavely, Noah and Holynski, Aleksander},
+    booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+    year      = {2026}
+}</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer class="footer">
+  <div align="center" class="container">
+    <div class="columns is-centered">
+        <div class="content">
+            This website is borrowed from <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a> and <a href="http://haian-jin.github.io/zipmap/">MegaSAM</a>. Thanks <a href="https://keunhong.com">Keunhong</a> and MegaSAM team!
+        </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function setFrustaMode(mode) {
+  state.other_frusta = (mode === 'all');
+  state.draw_frustum = (mode !== 'none');
+  state.image = (mode !== 'none') ? 'image' : 'empty';
+  dirty = true;
+  ['all', 'current', 'none'].forEach(m => document.getElementById('frusta-' + m).classList.remove('active-frusta'));
+  document.getElementById('frusta-' + mode).classList.add('active-frusta');
+}
+function setOtherPoints(mode) {
+  state.other_points = mode;
+  dirty = true;
+  ['no', 'points', 'past'].forEach(m => document.getElementById('other-points-' + m).classList.remove('active-frusta'));
+  document.getElementById('other-points-' + mode).classList.add('active-frusta');
+}
+// Reset controls to defaults whenever a new scene is loaded.
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelector('.load').addEventListener('click', function(event) {
+    if (event.target.dataset && event.target.dataset.glb) {
+      // Show GLB viewer, hide canvas-based viewer and toolbar
+      const frame = document.getElementById('glb-viewer-frame');
+      const ds = event.target.dataset;
+      let glbUrl = 'glb-viewer.html?src=' + encodeURIComponent(ds.glb);
+      if (ds.orbit) glbUrl += '&orbit=' + encodeURIComponent(ds.orbit);
+      if (ds.target) glbUrl += '&target=' + encodeURIComponent(ds.target);
+      if (ds.shadow_intensity !== undefined) glbUrl += '&shadow_intensity=' + encodeURIComponent(ds.shadow_intensity);
+      const loadingEl = document.getElementById('loading');
+      loadingEl.style.display = 'block';
+      loadingEl.style.zIndex = '10';
+      if (window._glbLoadInterval) clearInterval(window._glbLoadInterval);
+      frame.src = glbUrl;
+      window._glbLoadInterval = setInterval(() => {
+        try {
+          const mv = frame.contentDocument && frame.contentDocument.getElementById('mv');
+          if (mv && mv.loaded) {
+            loadingEl.style.display = 'none';
+            clearInterval(window._glbLoadInterval);
+          }
+        } catch(e) {}
+      }, 200);
+      frame.style.display = 'block';
+      document.getElementById('megaview').style.visibility = 'hidden';
+      const videoOverlay = document.getElementById('video-overlay');
+      if (videoOverlay) videoOverlay.style.display = 'none';
+      document.getElementById('viewer-toolbar').style.display = 'none';
+    } else if (event.target.dataset && event.target.dataset.scene) {
+      // Show canvas-based viewer and toolbar, hide GLB viewer
+      document.getElementById('glb-viewer-frame').style.display = 'none';
+      document.getElementById('megaview').style.visibility = '';
+      document.getElementById('viewer-toolbar').style.display = '';
+      const videoOverlay = document.getElementById('video-overlay');
+      if (videoOverlay && showVideoOverlay) videoOverlay.style.display = 'block';
+      const frustaMode = event.target.dataset.frusta_mode || 'all';
+      ['all', 'current', 'none'].forEach(m => document.getElementById('frusta-' + m).classList.remove('active-frusta'));
+      document.getElementById('frusta-' + frustaMode).classList.add('active-frusta');
+      setOtherPoints(event.target.dataset.other_points || 'past');
+      const otherSizeSlider = document.getElementById('other-point-size-slider');
+      if (otherSizeSlider) otherSizeSlider.value = 1;
+      const curSizeSlider = document.getElementById('point-size-slider');
+      if (curSizeSlider) curSizeSlider.value = 2;
+    }
+  });
+});
+</script>
+</body>
+</html>

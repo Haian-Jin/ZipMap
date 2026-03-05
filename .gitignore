@@ -1,0 +1,11 @@
+
+# large assets
+static/glb/mall_400.glb
+static/megaview/store-400.packed
+teaser_preparation
+*400.glb
+*400.packed
+*700.glb
+*700.packed
+.DS_Store
+teaser_preparation/merge_video.ipynb
