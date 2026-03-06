@@ -253,7 +253,7 @@ input[type=range]:disabled {
         <div class="content has-text-justified">
           <p>
 Feed-forward transformer models have driven rapid progress in 3D vision, but state-of-the-art methods such as VGGT and π³ have a computational cost that scales quadratically with the number of input images, making them inefficient when applied to large image collections. 
-Sequential-reconstruction approaches reduce this cost but sacrifice reconstruction quality. We introduce ZipMap, a stateful feed-forward model that achieves linear-time, bidirectional 3D reconstruction while matching or surpassing the accuracy of quadratic-time methods. ZipMap employs test-time training layers to compress an entire image collection into a compact hidden scene state in a single forward pass, enabling reconstruction of over 700 frames in under 10 seconds on a single H100 GPU—more than <strong>20×</strong> faster than SOTA methods such as VGGT. 
+Sequential-reconstruction approaches reduce this cost but sacrifice reconstruction quality. We introduce ZipMap, a stateful feed-forward model that achieves <strong>linear-time, bidirectional</strong> 3D reconstruction while matching or surpassing the accuracy of quadratic-time methods. ZipMap employs test-time training layers to compress an entire image collection into a compact hidden scene state in a single forward pass, enabling reconstruction of over 700 frames in under 10 seconds on a single H100 GPU—more than <strong>20×</strong> faster than SOTA methods such as VGGT. 
 Moreover, we demonstrate the benefits of having a stateful representation in real-time scene state querying and its extension to sequential streaming reconstruction.        
 </p>
         </div>
