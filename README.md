@@ -2,7 +2,7 @@
 Our evaluation code is heavily built on top of the repository [ZhouTimeMachine/recons_eval](https://github.com/ZhouTimeMachine/recons_eval) provided by the authors of [Pi3](https://github.com/yyfz/Pi3). We sincerely thank the authors for their open-source contributions. Our modifications include:
 - We incorporate our model, and some baseline models (Cut3R, TTT3R) into the framework.
 - We change the resolutions for models with patch size 14 (Pi3, VGGT, Our ZipMap) from 512 to 518
-- We include the runtime measurement code for all methods, which is not included in the original repository. We also provide a script to run the evaluation with multiple GPUs.
+- We include the runtime measurement code for all methods.
 
 
 
