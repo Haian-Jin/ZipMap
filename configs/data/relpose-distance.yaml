@@ -1,0 +1,55 @@
+sintel:
+  root_path: data/sintel/training
+  ls_all_seqs:
+    - alley_2
+    - ambush_4
+    - ambush_5
+    - ambush_6
+    - cave_2
+    - cave_4
+    - market_2
+    - market_5
+    - market_6
+    - shaman_3
+    - sleeping_1
+    - sleeping_2
+    - temple_2
+    - temple_3
+  img:
+    path: ${data.sintel.root_path}/final/{seq}
+    ext: png
+  depth:
+    path: ${data.sintel.root_path}/depth/{seq}
+    ext: dpt
+  anno:
+    path: ${data.sintel.root_path}/camdata_left/{seq}
+    format: sintel
+    ext: cam
+
+tum:
+  root_path: data/tum
+  ls_all_seqs: ${data.tum.root_path}
+  img:
+    path: ${data.tum.root_path}/{seq}/rgb_90
+    ext: png
+  depth:
+    path: ${data.tum.root_path}/{seq}/depth
+    ext: png
+  anno:
+    path: ${data.tum.root_path}/{seq}/groundtruth_90.txt
+    format: tum
+    ext: txt
+
+scannetv2:
+  root_path: data/scannetv2
+  ls_all_seqs: ${data.scannetv2.root_path}
+  img:
+    path: ${data.scannetv2.root_path}/{seq}/color_90
+    ext: jpg
+  depth:
+    path: ${data.scannetv2.root_path}/{seq}/depth_90
+    ext: png
+  anno:
+    path: ${data.scannetv2.root_path}/{seq}/pose_90.txt
+    format: replica
+    ext: txt

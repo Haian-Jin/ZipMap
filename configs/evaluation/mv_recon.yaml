@@ -1,0 +1,33 @@
+# @package _global_
+
+defaults:
+  - override /data: mv_recon
+
+name: mv_recon
+
+eval_models:
+  - pi3
+  - vggt
+  - ZipMap
+  - ttt3r
+  - cut3r
+
+eval_datasets:
+  # - 7scenes-sparse
+  # - 7scenes-dense
+  # - NRGBD-sparse
+  # - NRGBD-dense
+  - DTU
+  # - ETH3D
+
+
+no_crop: True
+load_img_size: 518
+
+device: cuda
+
+verbose: False
+
+seed: 42
+
+save_suffix: null

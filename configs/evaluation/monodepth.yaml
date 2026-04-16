@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - override /data: depth
+
+name: monodepth
+
+eval_models:
+  - pi3
+  - moge
+  - vggt
+  - ZipMap
+  - cut3r
+  - ttt3r
+
+eval_datasets:
+  - sintel
+  - bonn
+  - kitti
+  - nyu-v2
+
+invariant: median-scale  # using median(gt) / median(pred) as scale factor
+
+overwrite: False
+no_crop: True
+load_img_size: 518
+
+device: cuda
+
+verbose: False
+save_suffix: null

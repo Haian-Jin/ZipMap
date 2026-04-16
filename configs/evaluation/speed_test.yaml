@@ -1,0 +1,24 @@
+# @package _global_
+
+defaults:
+  - override /data: depth
+
+name: speed_test
+
+eval_models:
+  - ZipMap
+  - pi3
+  - vggt
+  - ttt3r
+  - cut3r
+
+
+
+overwrite: False
+no_crop: True
+load_img_size: 518
+
+device: cuda
+
+verbose: False
+save_suffix: null

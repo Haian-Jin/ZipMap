@@ -1,0 +1,63 @@
+kitti:
+  type: video  # with sequences of video
+  root_path: data/kitti//depth_selection/val_selection_cropped
+  ls_all_seqs: ${data.kitti.root_path}/image_gathered
+  img:
+    path: ${data.kitti.root_path}/image_gathered/{seq}
+    ext: png
+  depth:
+    path: ${data.kitti.root_path}/groundtruth_depth_gathered/{seq}
+    ext: png
+
+bonn:
+  type: video
+  root_path: data/bonn/rgbd_bonn_dataset
+  ls_all_seqs:
+    - rgbd_bonn_balloon2
+    - rgbd_bonn_crowd2
+    - rgbd_bonn_crowd3
+    - rgbd_bonn_person_tracking2
+    - rgbd_bonn_synchronous
+  img:
+    path: ${data.bonn.root_path}/{seq}/rgb_110
+    ext: png
+  depth:
+    path: ${data.bonn.root_path}/{seq}/depth_110
+    ext: png
+
+sintel:
+  type: video
+  root_path: data/sintel/training
+  ls_all_seqs:
+    - alley_2
+    - ambush_4
+    - ambush_5
+    - ambush_6
+    - cave_2
+    - cave_4
+    - market_2
+    - market_5
+    - market_6
+    - shaman_3
+    - sleeping_1
+    - sleeping_2
+    - temple_2
+    - temple_3
+  img:
+    path: ${data.sintel.root_path}/final/{seq}
+    ext: png
+  depth:
+    path: ${data.sintel.root_path}/depth/{seq}
+    ext: dpt
+  # anno:
+  #   path: ${data.sintel.root_path}/camdata_left
+
+nyu-v2:
+  type: mono  # only a set of images, without sequences
+  root_path: data/nyu-v2/val
+  img:
+    path: ${data.nyu-v2.root_path}/nyu_images
+    ext: png
+  depth:
+    path: ${data.nyu-v2.root_path}/nyu_depths
+    ext: npy

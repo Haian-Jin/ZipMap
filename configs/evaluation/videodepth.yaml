@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - override /data: depth
+
+name: videodepth
+
+eval_models:
+  - pi3
+  - vggt
+  - ZipMap
+  - ttt3r
+  - cut3r
+
+eval_datasets:
+  - sintel
+  - bonn
+  - kitti
+
+
+align: scale
+# align: scale&shift
+
+overwrite: False
+no_crop: True
+load_img_size: 518
+
+device: cuda
+
+verbose: False
+save_suffix: null

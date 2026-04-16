@@ -1,0 +1,69 @@
+7scenes-sparse:
+  cfg:
+    _target_: datasets.sevenscenes.SevenScenes
+    split: test
+    SEVENSCENES_DIR: data/7scenes
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/7scenes_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 200  # ori setting in cut3r
+  seq_id_map: datasets/seq-id-maps/7scenes_mv-recon_seq-id-map-kf200.json
+
+7scenes-dense:
+  cfg:
+    _target_: datasets.sevenscenes.SevenScenes
+    split: test
+    SEVENSCENES_DIR: data/7scenes
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/7scenes_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 40  # our dense setting
+  seq_id_map: datasets/seq-id-maps/7scenes_mv-recon_seq-id-map-kf40.json
+
+NRGBD-sparse:
+  cfg:
+    _target_: datasets.nrgbd.NRGBD
+    NRGBD_DIR: data/nrgbd
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/nrgbd_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 500  # ori setting in cut3r
+    # kf_every: 100
+  seq_id_map: datasets/seq-id-maps/NRGBD_mv-recon_seq-id-map-kf500.json
+
+NRGBD-dense:
+  cfg:
+    _target_: datasets.nrgbd.NRGBD
+    NRGBD_DIR: data/nrgbd
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/nrgbd_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 100  # our dense setting
+  seq_id_map: datasets/seq-id-maps/NRGBD_mv-recon_seq-id-map-kf100.json
+
+DTU:
+  cfg:
+    _target_: datasets.dtu.DTU
+    split: test
+    DTU_DIR: data/dtu
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/dtu_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 5
+  seq_id_map: datasets/seq-id-maps/DTU_mv-recon_seq-id-map-kf5.json
+
+ETH3D:
+  cfg:
+    _target_: datasets.eth3d.ETH3D
+    ETH3D_DIR: data/eth3d
+    load_img_size: ${load_img_size}
+    cache_file: data/dataset_cache/eth3d_mv_recon_cache.npy
+  sampling:
+    strategy: stride
+    kf_every: 5
+  seq_id_map: datasets/seq-id-maps/ETH3D_mv-recon_seq-id-map-kf5.json

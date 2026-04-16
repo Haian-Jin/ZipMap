@@ -1,0 +1,31 @@
+# @package _global_
+
+defaults:
+  - override /data: relpose-distance
+
+name: relpose-distance
+
+eval_models:
+  - pi3
+  - vggt
+  - FRM_AR
+  - ttt3r
+  - cut3r
+
+eval_datasets:
+  - sintel
+  - tum
+  - scannetv2
+
+
+no_crop: False
+load_img_size: 518
+pose_eval_stride: 1
+
+device: cuda
+
+verbose: False
+
+seed: 42
+
+save_suffix: null

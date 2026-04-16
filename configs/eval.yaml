@@ -1,0 +1,8 @@
+defaults:
+  - general: default
+  - data: depth
+  - model: default
+  - evaluation: null
+  - override hydra/job_logging: custom
+  - override hydra/hydra_logging: default
+  - _self_

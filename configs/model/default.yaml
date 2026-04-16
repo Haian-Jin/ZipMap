@@ -1,0 +1,36 @@
+pi3:  # model_keyname
+  cfg:
+    _target_: models.fastmodel.Pi3
+    pretrained_model_name_or_path: yyfz233/Pi3
+
+vggt:
+  cfg:
+    _target_: models.fastmodel.VGGT
+    pretrained_model_name_or_path: facebook/VGGT-1B
+
+
+
+moge:
+  cfg:
+    _target_: models.fastmodel.MoGe
+    pretrained_model_name_or_path: Ruicheng/moge-vitl
+    # pretrained_model_name_or_path: checkpoints/moge.pt
+
+
+ZipMap:
+  cfg:
+    _target_: models.fastmodel.ZipMap
+    pretrained_model_name_or_path: /path/to/zipmap_pretrained_model.pt
+    # pretrained_model_name_or_path: checkpoints/checkpoint_aff_inv.pt
+    affine_invariant: True
+
+
+ttt3r:
+  cfg:
+    _target_: models.fastmodel.TTT3R
+    pretrained_model_name_or_path: checkpoints/cut3r_512_dpt_4_64.pth
+
+cut3r:
+  cfg:
+    _target_: models.fastmodel.CUT3R
+    pretrained_model_name_or_path: checkpoints/cut3r_512_dpt_4_64.pth
