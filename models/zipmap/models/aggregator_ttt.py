@@ -308,18 +308,18 @@ class Aggregator(nn.Module):
 
 
         if "ttt_op_order" not in info:
-
+            # Scene State Query
             if target_query_conditions is not None:
                 num_input_tokens = S_input * P
                 ttt_op_order = [
                     TTTOperator(start=0, end=num_input_tokens, update=True, apply=False),
                     TTTOperator(start=0, end=-1, update=False, apply=True),
                 ]
+            # Don't do query.
             else:
-                # Don't do query.
                 window_size = info.get("window_size", None)
+                # Online reconstruction
                 if window_size is not None and window_size > 0:
-                    # online reconstruction
                     chunk_token_num = window_size * P
                     ttt_op_order = []
                     for start_idx in range(0, total_S * P, chunk_token_num):
@@ -330,8 +330,8 @@ class Aggregator(nn.Module):
                         ttt_op_order.append(
                             TTTOperator(start=start_idx, end=end_idx, update=False, apply=True)
                         )
+                # Bidirectional offline reconstruction
                 else:
-                    # bidirectional reconstruction
                     ttt_op_order = [
                         TTTOperator(start=0, end=-1, update=True, apply=False),
                         TTTOperator(start=0, end=-1, update=False, apply=True),
@@ -341,7 +341,7 @@ class Aggregator(nn.Module):
         frame_idx = 0
         global_idx = 0
         output_list = []
-        block4DPT_idx = [4, 11, 17, 23]
+        used_by_DPT_idx  = [4, 11, 17, 23]
         state_list = []
 
         for cur_block_num in range(self.aa_block_num):
@@ -362,8 +362,9 @@ class Aggregator(nn.Module):
                 else:
                     raise ValueError(f"Unknown attention type: {attn_type}")
 
-            # save memory by only storing features needed by DPT head (similar finding has also been adopted by prior work FastVGGT)
-            if cur_block_num in block4DPT_idx:
+            # Save memory by only storing features needed by DPT head
+            # This finding has also been adopted by prior work FastVGGT
+            if cur_block_num in used_by_DPT_idx :
                 for i in range(len(frame_intermediates)):
                     concat_inter = torch.cat([frame_intermediates[i], global_intermediates[i]], dim=-1)
                     output_list.append(concat_inter)
@@ -410,6 +411,7 @@ class Aggregator(nn.Module):
             pos = pos + 1
             pos_special = torch.zeros(B * total_S, self.patch_start_idx, 2).to(ray_conditions.device).to(pos.dtype)
             pos = torch.cat([pos_special, pos], dim=1) # [B*S, P, 2]
+        
         # update P because we added special tokens
         _, P, C = tokens.shape
 
@@ -417,7 +419,7 @@ class Aggregator(nn.Module):
         frame_idx = 0
         global_idx = 0
         output_list = []
-        block4DPT_idx = [4, 11, 17, 23]
+        used_by_DPT_idx  = [4, 11, 17, 23]
         state_list = []
 
 
@@ -439,9 +441,9 @@ class Aggregator(nn.Module):
                     raise ValueError(f"Unknown attention type: {attn_type}")
 
 
-            if cur_block_num in block4DPT_idx:
+            if cur_block_num in used_by_DPT_idx :
                 # save memory by only storing features needed by DPT head
-                # similar finding has also been adopted by prior work FastVGGT
+                # This finding has also been adopted by prior work FastVGGT
                 for i in range(len(frame_intermediates)):
                     concat_inter = torch.cat([frame_intermediates[i], global_intermediates[i]], dim=-1)
                     output_list.append(concat_inter)

@@ -1,0 +1,8 @@
+debug_testing
+data
+checkpoints
+
+**/__pycache__
+logs
+certificate.pem
+settings.json
